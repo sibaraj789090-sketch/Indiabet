@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: lobby
+    description: Public game lobby data
+  - name: admin
+    description: Admin-only lobby management
 paths:
   /healthz:
     get:
@@ -24,6 +28,365 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /games:
+    get:
+      operationId: listGames
+      tags: [lobby]
+      summary: List active games
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active games matching the filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+  /promotions:
+    get:
+      operationId: listPromotions
+      tags: [lobby]
+      summary: List active promotions
+      responses:
+        "200":
+          description: Public promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+  /banners:
+    get:
+      operationId: listBanners
+      tags: [lobby]
+      summary: List active hero banners
+      responses:
+        "200":
+          description: Public hero banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Banner"
+  /sports/fixtures:
+    get:
+      operationId: listFixtures
+      tags: [lobby]
+      summary: List sample sports fixtures
+      responses:
+        "200":
+          description: Sample fixtures with no betting odds or wagering actions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fixture"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get the admin dashboard summary
+      responses:
+        "200":
+          description: Counts and recent admin activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+  /admin/games:
+    get:
+      operationId: listAdminGames
+      tags: [admin]
+      summary: List all games for administration
+      responses:
+        "200":
+          description: All games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+    post:
+      operationId: createGame
+      tags: [admin]
+      summary: Create a game
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameInput"
+      responses:
+        "201":
+          description: Created game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+        "400":
+          description: Invalid game data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+  /admin/games/{id}:
+    patch:
+      operationId: updateGame
+      tags: [admin]
+      summary: Update a game
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameUpdate"
+      responses:
+        "200":
+          description: Updated game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+        "400":
+          description: Invalid game data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Game not found
+    delete:
+      operationId: deleteGame
+      tags: [admin]
+      summary: Delete a game
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Game deleted
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Game not found
+  /admin/promotions:
+    get:
+      operationId: listAdminPromotions
+      tags: [admin]
+      summary: List all promotions for administration
+      responses:
+        "200":
+          description: All promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+    post:
+      operationId: createPromotion
+      tags: [admin]
+      summary: Create a promotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionInput"
+      responses:
+        "201":
+          description: Created promotion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+        "400":
+          description: Invalid promotion data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+  /admin/promotions/{id}:
+    patch:
+      operationId: updatePromotion
+      tags: [admin]
+      summary: Update a promotion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionUpdate"
+      responses:
+        "200":
+          description: Updated promotion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+        "400":
+          description: Invalid promotion data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Promotion not found
+    delete:
+      operationId: deletePromotion
+      tags: [admin]
+      summary: Delete a promotion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Promotion deleted
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Promotion not found
+  /admin/banners:
+    get:
+      operationId: listAdminBanners
+      tags: [admin]
+      summary: List all hero banners
+      responses:
+        "200":
+          description: All hero banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Banner"
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+    post:
+      operationId: createBanner
+      tags: [admin]
+      summary: Create a hero banner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BannerInput"
+      responses:
+        "201":
+          description: Created banner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Banner"
+        "400":
+          description: Invalid banner data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+  /admin/banners/{id}:
+    patch:
+      operationId: updateBanner
+      tags: [admin]
+      summary: Update a hero banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BannerUpdate"
+      responses:
+        "200":
+          description: Updated banner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Banner"
+        "400":
+          description: Invalid banner data
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Banner not found
+    delete:
+      operationId: deleteBanner
+      tags: [admin]
+      summary: Delete a hero banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Banner deleted
+        "401":
+          description: Sign in required
+        "403":
+          description: Admin access required
+        "404":
+          description: Banner not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +396,120 @@ components:
           type: string
       required:
         - status
+    Game:
+      type: object
+      required: [id, name, category, provider, imageUrl, players, featured, active, sortOrder]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        category: { type: string }
+        provider: { type: string }
+        imageUrl: { type: string }
+        badge: { type: ["string", "null"] }
+        players: { type: integer }
+        featured: { type: boolean }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    GameInput:
+      type: object
+      required: [name, category, provider, imageUrl]
+      properties:
+        name: { type: string, minLength: 1 }
+        category: { type: string, minLength: 1 }
+        provider: { type: string, minLength: 1 }
+        imageUrl: { type: string, minLength: 1 }
+        badge: { type: ["string", "null"] }
+        players: { type: integer, minimum: 0 }
+        featured: { type: boolean }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    GameUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        category: { type: string, minLength: 1 }
+        provider: { type: string, minLength: 1 }
+        imageUrl: { type: string, minLength: 1 }
+        badge: { type: ["string", "null"] }
+        players: { type: integer, minimum: 0 }
+        featured: { type: boolean }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    Promotion:
+      type: object
+      required: [id, title, description, badge, active, sortOrder]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        badge: { type: string }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    PromotionInput:
+      type: object
+      required: [title, description, badge]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        badge: { type: string, minLength: 1 }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    PromotionUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        badge: { type: string, minLength: 1 }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    Banner:
+      type: object
+      required: [id, title, subtitle, imageUrl, ctaLabel, active, sortOrder]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        subtitle: { type: string }
+        imageUrl: { type: string }
+        ctaLabel: { type: string }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    BannerInput:
+      type: object
+      required: [title, subtitle, imageUrl, ctaLabel]
+      properties:
+        title: { type: string, minLength: 1 }
+        subtitle: { type: string }
+        imageUrl: { type: string, minLength: 1 }
+        ctaLabel: { type: string, minLength: 1 }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    BannerUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        subtitle: { type: string }
+        imageUrl: { type: string, minLength: 1 }
+        ctaLabel: { type: string, minLength: 1 }
+        active: { type: boolean }
+        sortOrder: { type: integer }
+    AdminOverview:
+      type: object
+      required: [totalGames, activeGames, totalPromotions, activePromotions, totalBanners, activeBanners]
+      properties:
+        totalGames: { type: integer }
+        activeGames: { type: integer }
+        totalPromotions: { type: integer }
+        activePromotions: { type: integer }
+        totalBanners: { type: integer }
+        activeBanners: { type: integer }
+    Fixture:
+      type: object
+      required: [id, league, homeTeam, awayTeam, startTime, status]
+      properties:
+        id: { type: string }
+        league: { type: string }
+        homeTeam: { type: string }
+        awayTeam: { type: string }
+        startTime: { type: string }
+        status: { type: string }
 

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "A-Z Arena"
+description = "A mobile-first play-credit gaming hub inspired by the supplied references, with casual game categories, sports fixtures, rewards, promotions, and a protected admin console for managing the lobby."
+version = "1.0.0"
+id = "artifacts/az-arena"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26016
+
+[services.development]
+run = "pnpm --filter @workspace/az-arena run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/az-arena", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/az-arena/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26016"
+BASE_PATH = "/"
