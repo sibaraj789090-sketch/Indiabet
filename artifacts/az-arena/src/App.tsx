@@ -55,9 +55,9 @@ import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
+const rawClerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = rawClerkKey ? publishableKeyFromHost(window.location.hostname, rawClerkKey) : '';
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-if (!clerkPubKey) throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY for Clerk sign-in.');
 
 function stripBase(path: string) {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path;
@@ -316,9 +316,41 @@ function PromotionsPage() {
 }
 
 function SignInPage() {
+  if (!clerkPubKey) {
+    return (
+      <div className="auth-backdrop">
+        <div style={{ textAlign: 'center', maxWidth: 440, padding: 32, background: '#202537', borderRadius: 16 }}>
+          <Brand />
+          <h2 style={{ color: '#f4eddf', fontSize: 22, margin: '20px 0 10px' }}>Authentication Setup</h2>
+          <p style={{ color: '#aeb3c1', fontSize: 14, lineHeight: 1.6 }}>
+            Sign-in is powered by Clerk. Provide <code>VITE_CLERK_PUBLISHABLE_KEY</code> in environment variables to enable authentication.
+          </p>
+          <div style={{ marginTop: 24 }}>
+            <Link href="/" className="primary-btn" style={{ display: 'inline-flex' }}>Return to Lobby <ArrowRight size={15} /></Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return <div className="auth-backdrop"><div><div className="auth-brand"><Brand /><p>Your next favorite game is just around the corner.</p></div><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></div></div>;
 }
 function SignUpPage() {
+  if (!clerkPubKey) {
+    return (
+      <div className="auth-backdrop">
+        <div style={{ textAlign: 'center', maxWidth: 440, padding: 32, background: '#202537', borderRadius: 16 }}>
+          <Brand />
+          <h2 style={{ color: '#f4eddf', fontSize: 22, margin: '20px 0 10px' }}>Create an Account</h2>
+          <p style={{ color: '#aeb3c1', fontSize: 14, lineHeight: 1.6 }}>
+            Account creation is powered by Clerk. Provide <code>VITE_CLERK_PUBLISHABLE_KEY</code> in environment variables to enable registration.
+          </p>
+          <div style={{ marginTop: 24 }}>
+            <Link href="/" className="primary-btn" style={{ display: 'inline-flex' }}>Return to Lobby <ArrowRight size={15} /></Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return <div className="auth-backdrop"><div><div className="auth-brand"><Brand /><p>Join the arcade. Browse freely, play for fun.</p></div><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></div></div>;
 }
 
@@ -532,10 +564,7 @@ function ClerkQueryClientCacheInvalidator() {
 
 function ClerkRoutes() {
   const [, setLocation] = useLocation();
-  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={appearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`}
-    localization={{ signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to your A–Z Arena account' } }, signUp: { start: { title: 'Join the arcade', subtitle: 'Make room for a little play' } } }}
-    routerPush={to => setLocation(stripBase(to))} routerReplace={to => setLocation(stripBase(to), { replace: true })}>
-    <ClerkQueryClientCacheInvalidator />
+  const routeContent = (
     <RoutedErrorBoundary><Switch>
       <Route path="/" component={HomePage} />
       <Route path="/casino" component={CasinoPage} />
@@ -550,6 +579,17 @@ function ClerkRoutes() {
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />
     </Switch></RoutedErrorBoundary>
+  );
+
+  if (!clerkPubKey) {
+    return routeContent;
+  }
+
+  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={appearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`}
+    localization={{ signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to your A–Z Arena account' } }, signUp: { start: { title: 'Join the arcade', subtitle: 'Make room for a little play' } } }}
+    routerPush={to => setLocation(stripBase(to))} routerReplace={to => setLocation(stripBase(to), { replace: true })}>
+    <ClerkQueryClientCacheInvalidator />
+    {routeContent}
   </ClerkProvider>;
 }
 

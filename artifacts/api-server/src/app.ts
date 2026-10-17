@@ -32,17 +32,25 @@ app.use(
     },
   }),
 );
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+
+if (process.env.CLERK_PUBLISHABLE_KEY) {
+  app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+  app.use(
+    clerkMiddleware((req) => ({
+      publishableKey: publishableKeyFromHost(
+        getClerkProxyHost(req) ?? "",
+        process.env.CLERK_PUBLISHABLE_KEY,
+      ),
+    })),
+  );
+} else {
+  app.use((req, _res, next) => {
+    (req as any).auth = { userId: null, sessionId: null };
+    next();
+  });
+}
 
 app.use(cors({ credentials: true, origin: true }));
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

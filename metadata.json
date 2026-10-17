@@ -1,0 +1,6 @@
+{
+  "name": "A-Z Arena",
+  "description": "An interactive online demo gaming arena featuring classic arcade games, sports matchday fixtures, rummy practice tables, promotional rewards, and admin management.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
